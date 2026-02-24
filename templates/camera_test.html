@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Diagnostic Tool - GestureAI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            color: white;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #00f3ff, #ff00c8);
+        
+        }
+
+        .subtitle {
+            text-align: center;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .status-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #status {
+            padding: 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .status-info {
+            background: rgba(0, 243, 255, 0.2);
+            color: #00f3ff;
+            border: 1px solid #00f3ff;
+        }
+
+        .status-success {
+            background: rgba(0, 255, 157, 0.2);
+            color: #00ff9d;
+            border: 1px solid #00ff9d;
+        }
+
+        .status-error {
+            background: rgba(255, 77, 77, 0.2);
+            color: #ff4d4d;
+            border: 1px solid #ff4d4d;
+        }
+
+        .status-warning {
+            background: rgba(255, 184, 0, 0.2);
+            color: #ffb800;
+            border: 1px solid #ffb800;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 243, 255, 0.3);
+            border-color: #00f3ff;
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, #00f3ff, #ff00c8);
+            border: none;
+        }
+
+        button.primary:hover {
+            box-shadow: 0 5px 30px rgba(255, 0, 200, 0.4);
+        }
+
+        .video-container {
+            width: 100%;
+            max-width: 640px;
+            margin: 2rem auto;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 3px solid transparent;
+            background: linear-gradient(135deg, #00f3ff, #ff00c8);
+            padding: 3px;
+        }
+
+        video, img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 12px;
+            background: #1a1a2a;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .info-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-card h3 {
+            color: #00f3ff;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .info-card p {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .back-link:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+        .loader {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid #00f3ff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .permission-hint {
+            background: rgba(255, 184, 0, 0.1);
+            border: 1px solid #ffb800;
+            color: #ffb800;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .permission-hint.show {
+            display: block;
+        }
+
+        .browser-info {
+            font-family: monospace;
+            background: rgba(0,0,0,0.2);
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Camera Diagnostic Tool</h1>
+        <p class="subtitle">Test and diagnose camera access issues</p>
+
+        <div class="status-panel">
+            <div id="status" class="status-info">
+                <i class="fas fa-info-circle"></i> Ready to test camera...
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button onclick="testDirectCamera()" class="primary">
+                <i class="fas fa-camera"></i> Test Direct Camera Access
+            </button>
+            <button onclick="testBackendCamera()">
+                <i class="fas fa-server"></i> Test Backend Camera
+            </button>
+            <button onclick="checkPermissions()">
+                <i class="fas fa-shield-alt"></i> Check Permissions
+            </button>
+        </div>
+
+        <div class="permission-hint" id="permissionHint">
+            <strong>📌 How to enable camera permissions:</strong>
+            <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
+                <li>Click the camera/lock icon in your browser's address bar</li>
+                <li>Select "Allow" for camera access</li>
+                <li>Refresh this page</li>
+            </ul>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <h3><i class="fas fa-globe"></i> Browser</h3>
+                <p id="browserName">Detecting...</p>
+            </div>
+            <div class="info-card">
+                <h3><i class="fas fa-video"></i> Camera Status</h3>
+                <p id="cameraStatus">Unknown</p>
+            </div>
+            <div class="info-card">
+                <h3><i class="fas fa-shield-alt"></i> Permission</h3>
+                <p id="permissionStatus">Unknown</p>
+            </div>
+        </div>
+
+        <div class="video-container">
+            <video id="testVideo" autoplay playsinline style="display: none;"></video>
+            <img id="testImage" src="" alt="Camera Feed" style="display: none;">
+            <div id="videoPlaceholder" style="padding: 2rem; text-align: center; color: #666;">
+                <i class="fas fa-video" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <p>Click a test button to see camera feed</p>
+            </div>
+        </div>
+
+        <div id="testResults" style="margin-top: 2rem;">
+            <h3>Test Results:</h3>
+            <div id="results" style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; min-height: 100px;">
+                No tests run yet.
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to GestureAI
+            </a>
+        </div>
+    </div>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <script>
+        // Update browser info
+        function updateBrowserInfo() {
+            const browser = navigator.userAgent;
+            let browserName = "Unknown";
+            
+            if (browser.includes("Chrome")) browserName = "Chrome";
+            else if (browser.includes("Firefox")) browserName = "Firefox";
+            else if (browser.includes("Safari")) browserName = "Safari";
+            else if (browser.includes("Edge")) browserName = "Edge";
+            
+            document.getElementById('browserName').textContent = browserName;
+        }
+
+        // Check permissions
+        async function checkPermissions() {
+            const status = document.getElementById('status');
+            const permissionStatus = document.getElementById('permissionStatus');
+            const hint = document.getElementById('permissionHint');
+            
+            try {
+                status.className = 'status-info';
+                status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking camera permissions...';
+                
+                // Try to enumerate devices first
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const hasCamera = devices.some(device => device.kind === 'videoinput');
+                
+                if (!hasCamera) {
+                    status.className = 'status-error';
+                    status.innerHTML = '<i class="fas fa-times-circle"></i> No camera detected on your system';
+                    cameraStatus.textContent = 'Not Found';
+                    hint.classList.add('show');
+                    return;
+                }
+                
+                // Check permission state
+                try {
+                    const result = await navigator.permissions.query({ name: 'camera' });
+                    permissionStatus.textContent = result.state;
+                    
+                    if (result.state === 'granted') {
+                        status.className = 'status-success';
+                        status.innerHTML = '<i class="fas fa-check-circle"></i> Camera permission granted';
+                        hint.classList.remove('show');
+                    } else if (result.state === 'denied') {
+                        status.className = 'status-error';
+                        status.innerHTML = '<i class="fas fa-times-circle"></i> Camera permission denied';
+                        hint.classList.add('show');
+                    } else {
+                        status.className = 'status-warning';
+                        status.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Camera permission prompt required';
+                        hint.classList.add('show');
+                    }
+                } catch (e) {
+                    // Permission API not supported, try direct access
+                    status.innerHTML = '<i class="fas fa-info-circle"></i> Testing direct camera access...';
+                    await testDirectCamera();
+                }
+                
+                document.getElementById('cameraStatus').textContent = hasCamera ? 'Detected' : 'Not Found';
+                
+            } catch (error) {
+                console.error('Permission check error:', error);
+                status.className = 'status-error';
+                status.innerHTML = `<i class="fas fa-times-circle"></i> Error: ${error.message}`;
+            }
+        }
+
+        // Test direct camera access
+        async function testDirectCamera() {
+            const status = document.getElementById('status');
+            const video = document.getElementById('testVideo');
+            const placeholder = document.getElementById('videoPlaceholder');
+            const testImage = document.getElementById('testImage');
+            const results = document.getElementById('results');
+            
+            try {
+                status.className = 'status-info';
+                status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Requesting camera access...';
+                
+                video.style.display = 'none';
+                testImage.style.display = 'none';
+                placeholder.style.display = 'block';
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: 640, 
+                        height: 480,
+                        facingMode: 'user'
+                    } 
+                });
+                
+                // Success!
+                video.srcObject = stream;
+                video.style.display = 'block';
+                placeholder.style.display = 'none';
+                
+                status.className = 'status-success';
+                status.innerHTML = '<i class="fas fa-check-circle"></i> Camera working! You should see yourself above.';
+                
+                results.innerHTML = `
+                    <p>✅ Direct camera test PASSED</p>
+                    <p>📊 Resolution: ${stream.getVideoTracks()[0].getSettings().width}x${stream.getVideoTracks()[0].getSettings().height}</p>
+                    <p>📹 Camera: ${stream.getVideoTracks()[0].label}</p>
+                `;
+                
+                document.getElementById('permissionStatus').textContent = 'granted';
+                document.getElementById('cameraStatus').textContent = 'Working';
+                document.getElementById('permissionHint').classList.remove('show');
+                
+                // Auto-stop after 10 seconds
+                setTimeout(() => {
+                    stream.getTracks().forEach(track => track.stop());
+                    video.style.display = 'none';
+                    placeholder.style.display = 'block';
+                }, 10000);
+                
+            } catch (error) {
+                console.error('Camera error:', error);
+                
+                video.style.display = 'none';
+                placeholder.style.display = 'block';
+                
+                let errorMessage = error.message;
+                let errorType = 'Unknown error';
+                
+                if (error.name === 'NotAllowedError') {
+                    errorType = 'Permission Denied';
+                    errorMessage = 'Please allow camera access in your browser';
+                    document.getElementById('permissionHint').classList.add('show');
+                } else if (error.name === 'NotFoundError') {
+                    errorType = 'No Camera Found';
+                    errorMessage = 'No camera detected on your device';
+                } else if (error.name === 'NotReadableError') {
+                    errorType = 'Camera in Use';
+                    errorMessage = 'Camera is already being used by another app';
+                }
+                
+                status.className = 'status-error';
+                status.innerHTML = `<i class="fas fa-times-circle"></i> ${errorType}: ${errorMessage}`;
+                
+                results.innerHTML = `
+                    <p>❌ Direct camera test FAILED</p>
+                    <p>Error: ${error.name || 'Unknown'}</p>
+                    <p>Message: ${error.message}</p>
+                `;
+            }
+        }
+
+        // Test backend camera
+        async function testBackendCamera() {
+            const status = document.getElementById('status');
+            const testImage = document.getElementById('testImage');
+            const video = document.getElementById('testVideo');
+            const placeholder = document.getElementById('videoPlaceholder');
+            const results = document.getElementById('results');
+            
+            try {
+                status.className = 'status-info';
+                status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing backend camera connection...';
+                
+                // Stop any existing video stream
+                if (video.srcObject) {
+                    video.srcObject.getTracks().forEach(track => track.stop());
+                    video.srcObject = null;
+                }
+                
+                video.style.display = 'none';
+                testImage.style.display = 'none';
+                placeholder.style.display = 'block';
+                
+                // First, try to start the backend camera
+                const startResponse = await fetch('/start_camera', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const startData = await startResponse.json();
+                
+                if (!startData.success) {
+                    throw new Error(startData.message || 'Failed to start backend camera');
+                }
+                
+                // Now try to get the video feed
+                testImage.src = `/video_feed?t=${Date.now()}`;
+                testImage.style.display = 'block';
+                placeholder.style.display = 'none';
+                
+                status.className = 'status-success';
+                status.innerHTML = '<i class="fas fa-check-circle"></i> Backend camera connected!';
+                
+                results.innerHTML = `
+                    <p>✅ Backend camera test PASSED</p>
+                    <p>📡 Connected to Flask backend</p>
+                    <p>🎥 Video feed is streaming</p>
+                `;
+                
+                // Auto-stop after 10 seconds
+                setTimeout(async () => {
+                    await fetch('/stop_camera', { method: 'POST' });
+                    testImage.style.display = 'none';
+                    placeholder.style.display = 'block';
+                    testImage.src = '';
+                }, 10000);
+                
+            } catch (error) {
+                console.error('Backend camera error:', error);
+                
+                testImage.style.display = 'none';
+                placeholder.style.display = 'block';
+                
+                status.className = 'status-error';
+                status.innerHTML = `<i class="fas fa-times-circle"></i> Backend camera error: ${error.message}`;
+                
+                results.innerHTML = `
+                    <p>❌ Backend camera test FAILED</p>
+                    <p>Error: ${error.message}</p>
+                    <p>Make sure your Flask app is running</p>
+                `;
+            }
+        }
+
+        // Initialize
+        updateBrowserInfo();
+        checkPermissions();
+
+        // Add keyboard shortcut (Press 'T' to test)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 't' || e.key === 'T') {
+                testDirectCamera();
+            }
+        });
+    </script>
+</body>
+</html>

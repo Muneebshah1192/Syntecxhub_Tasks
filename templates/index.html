@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GestureAI - Next Gen Hand Gesture Recognition</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00f3ff;
+            --secondary: #ff00c8;
+            --accent: #7000ff;
+            --success: #00ff9d;
+            --warning: #ffb800;
+            --danger: #ff4d4d;
+            --dark: #0a0a0f;
+            --darker: #050508;
+            --light: #ffffff;
+            --gray: #8f9bb3;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--dark);
+            color: var(--light);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 243, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 0, 200, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 10% 90%, rgba(112, 0, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float-particle 10s infinite linear;
+        }
+
+        @keyframes float-particle {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+            position: relative;
+        }
+
+        .glitch-title {
+            font-size: 4rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            position: relative;
+            display: inline-block;
+            animation: glitch 3s infinite;
+        }
+
+        .glitch-title::before,
+        .glitch-title::after {
+            content: 'GESTURE AI';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch-title::before {
+            color: var(--primary);
+            animation: glitch-offset 0.3s infinite linear alternate-reverse;
+        }
+
+        .glitch-title::after {
+            color: var(--secondary);
+            animation: glitch-offset2 0.2s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch {
+            0%, 100% { transform: skew(0deg, 0deg); }
+            95% { transform: skew(0deg, 0deg); }
+            96% { transform: skew(5deg, 2deg); }
+            97% { transform: skew(-5deg, -2deg); }
+            98% { transform: skew(3deg, 1deg); }
+            99% { transform: skew(-3deg, -1deg); }
+        }
+
+        @keyframes glitch-offset {
+            from { transform: translateX(2px); }
+            to { transform: translateX(-2px); }
+        }
+
+        @keyframes glitch-offset2 {
+            from { transform: translateX(-2px); }
+            to { transform: translateX(2px); }
+        }
+
+        .subtitle {
+            color: var(--gray);
+            font-size: 1.2rem;
+            margin-top: 20px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .subtitle::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 40px 0;
+            padding: 20px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-shadow: 0 0 20px var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Main Camera Card */
+        .camera-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .camera-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 40px rgba(0, 243, 255, 0.2);
+        }
+
+        .camera-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+            border-radius: 32px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: -1;
+        }
+
+        .camera-card:hover::before {
+            opacity: 1;
+        }
+
+        .camera-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--danger);
+            position: relative;
+        }
+
+        .status-dot.active {
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(0, 255, 157, 0); }
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--light);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .btn-icon:hover:not(:disabled) {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px var(--primary);
+        }
+
+        .btn-icon:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .video-container {
+            position: relative;
+            background: var(--darker);
+            min-height: 480px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #videoFeed {
+            width: 100%;
+            max-height: 600px;
+            object-fit: cover;
+            display: none;
+            transform: scaleX(-1); /* Mirror effect */
+        }
+
+        .placeholder {
+            text-align: center;
+            color: var(--gray);
+            animation: float 3s infinite;
+        }
+
+        .placeholder i {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            filter: drop-shadow(0 0 20px var(--primary));
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Gesture Panel */
+        .gesture-panel {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .gesture-box {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gesture-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            20% { transform: translateX(100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .gesture-box:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.3);
+        }
+
+        .gesture-label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .gesture-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            min-height: 2.5rem;
+            text-shadow: 0 0 10px var(--primary);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            padding: 0 30px 30px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .btn-action {
+            padding: 15px;
+            border: none;
+            border-radius: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--light);
+            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-action::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-action:hover::before {
+            left: 100%;
+        }
+
+        .btn-action:hover:not(:disabled) {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 243, 255, 0.3);
+        }
+
+        .btn-action:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Gesture Library */
+        .library-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+        }
+
+        .gesture-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .gesture-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 25px 15px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .gesture-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 0 40px rgba(0, 243, 255, 0.3);
+        }
+
+        .gesture-emoji {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 20px var(--primary));
+        }
+
+        .gesture-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--light);
+        }
+
+        .gesture-action {
+            font-size: 0.9rem;
+            color: var(--primary);
+        }
+
+        /* Info Panel */
+        .info-panel {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .info-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 25px;
+        }
+
+        .info-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: var(--primary);
+            font-size: 1.3rem;
+        }
+
+        .info-list {
+            list-style: none;
+        }
+
+        .info-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--glass-border);
+            color: var(--gray);
+        }
+
+        .info-list li i {
+            color: var(--success);
+            font-size: 1rem;
+        }
+
+        .tip-box {
+            background: linear-gradient(135deg, rgba(255, 184, 0, 0.1), rgba(255, 0, 200, 0.1));
+            border: 1px solid var(--warning);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .tip-box i {
+            font-size: 2rem;
+            color: var(--warning);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--primary);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            z-index: 9999;
+            animation: slideIn 0.3s;
+            box-shadow: 0 4px 20px rgba(0, 243, 255, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .glitch-title {
+                font-size: 2.5rem;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+                gap: 20px;
+                border-radius: 20px;
+            }
+
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .info-panel {
+                grid-template-columns: 1fr;
+            }
+
+            .gesture-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--glass-border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Particles -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="glitch-title">GESTURE AI</h1>
+            <p class="subtitle">Control the future with your hands</p>
+        </header>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-value">8+</span>
+                <span class="stat-label">Gestures</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">30ms</span>
+                <span class="stat-label">Latency</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">99%</span>
+                <span class="stat-label">Accuracy</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">2</span>
+                <span class="stat-label">Hands</span>
+            </div>
+        </div>
+
+        <!-- Main Camera Card -->
+        <div class="camera-card">
+            <div class="camera-header">
+                <div class="status-badge">
+                    <span class="status-dot" id="cameraStatus"></span>
+                    <span id="statusText">SYSTEM OFFLINE</span>
+                </div>
+                <div class="camera-controls">
+                    <button class="btn-icon" id="settingsBtn" title="Settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="video-container">
+                <img id="videoFeed" src="" alt="Camera Feed">
+                <div class="placeholder" id="placeholder">
+                    <i class="fas fa-hand-peace"></i>
+                    <p>Initialize camera to begin gesture recognition</p>
+                </div>
+            </div>
+            
+            <div class="gesture-panel">
+                <div class="gesture-box">
+                    <span class="gesture-label">Current Gesture</span>
+                    <span class="gesture-value" id="detectedGesture">—</span>
+                </div>
+                <div class="gesture-box">
+                    <span class="gesture-label">System Action</span>
+                    <span class="gesture-value" id="detectedAction">—</span>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn-action" id="startBtn">
+                    <i class="fas fa-play"></i>
+                    <span>START</span>
+                </button>
+                <button class="btn-action" id="stopBtn" disabled>
+                    <i class="fas fa-stop"></i>
+                    <span>STOP</span>
+                </button>
+                <button class="btn-action" id="screenshotBtn" disabled>
+                    <i class="fas fa-camera"></i>
+                    <span>SHOT</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Gesture Library -->
+        <div class="library-section">
+            <h2 class="section-title">Gesture Library</h2>
+            <div class="gesture-grid" id="gestureGrid">
+                <div class="gesture-card">
+                    <div class="gesture-emoji">👍</div>
+                    <div class="gesture-name">Thumbs Up</div>
+                    <div class="gesture-action">Volume Up</div>
+                </div>
+                <div class="gesture-card">
+                    <div class="gesture-emoji">👎</div>
+                    <div class="gesture-name">Thumbs Down</div>
+                    <div class="gesture-action">Volume Down</div>
+                </div>
+                <div class="gesture-card">
+                    <div class="gesture-emoji">✌️</div>
+                    <div class="gesture-name">Peace</div>
+                    <div class="gesture-action">Play/Pause</div>
+                </div>
+                <div class="gesture-card">
+                    <div class="gesture-emoji">👊</div>
+                    <div class="gesture-name">Fist</div>
+                    <div class="gesture-action">Mute</div>
+                </div>
+                <div class="gesture-card">
+                    <div class="gesture-emoji">✋</div>
+                    <div class="gesture-name">Open Palm</div>
+                    <div class="gesture-action">Stop</div>
+                </div>
+                <div class="gesture-card">
+                    <div class="gesture-emoji">👌</div>
+                    <div class="gesture-name">Okay</div>
+                    <div class="gesture-action">Confirm</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="info-panel">
+            <div class="info-card">
+                <h3>
+                    <i class="fas fa-lightbulb"></i>
+                    Quick Guide
+                </h3>
+                <ul class="info-list">
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <span>Position hand clearly in frame</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <span>Ensure good lighting conditions</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <span>Hold gestures for 2 seconds</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <span>Keep background uncluttered</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="info-card">
+                <h3>
+                    <i class="fas fa-microchip"></i>
+                    System Info
+                </h3>
+                <ul class="info-list">
+                    <li>
+                        <i class="fas fa-camera"></i>
+                        <span>Resolution: 640x480</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>FPS: 30 frames/sec</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-hand-peace"></i>
+                        <span>Max Hands: 2</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Local Processing</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Tip Box -->
+        <div class="tip-box">
+            <i class="fas fa-info-circle"></i>
+            <div>
+                <strong>Pro Tip:</strong> For best results, ensure your hand is at least 30cm from the camera and well-lit.
+            </div>
+        </div>
+    </div>
+
+   <script>
+    class GestureAI {
+        constructor() {
+            this.isActive = false;
+            this.pollInterval = null;
+            this.debugMode = true; // Enable debug mode
+            
+            // DOM elements
+            this.videoFeed = document.getElementById('videoFeed');
+            this.startBtn = document.getElementById('startBtn');
+            this.stopBtn = document.getElementById('stopBtn');
+            this.screenshotBtn = document.getElementById('screenshotBtn');
+            this.settingsBtn = document.getElementById('settingsBtn');
+            this.cameraStatus = document.getElementById('cameraStatus');
+            this.statusText = document.getElementById('statusText');
+            this.placeholder = document.getElementById('placeholder');
+            this.detectedGesture = document.getElementById('detectedGesture');
+            this.detectedAction = document.getElementById('detectedAction');
+            
+            // Create debug panel
+            this.createDebugPanel();
+            
+            // Create particles
+            this.createParticles();
+            
+            this.init();
+        }
+        
+        createDebugPanel() {
+            const debugPanel = document.createElement('div');
+            debugPanel.id = 'debugPanel';
+            debugPanel.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                background: rgba(0, 0, 0, 0.9);
+                border: 1px solid #00f3ff;
+                border-radius: 10px;
+                padding: 15px;
+                color: #00f3ff;
+                font-family: monospace;
+                font-size: 12px;
+                z-index: 10000;
+                max-width: 300px;
+                display: ${this.debugMode ? 'block' : 'none'};
+            `;
+            debugPanel.innerHTML = `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <strong>🔍 DEBUG INFO</strong>
+                    <button onclick="document.getElementById('debugPanel').style.display='none'" style="background: none; border: none; color: #ff4d4d; cursor: pointer;">✕</button>
+                </div>
+                <div id="debugContent"></div>
+            `;
+            document.body.appendChild(debugPanel);
+            this.debugContent = document.getElementById('debugContent');
+        }
+        
+        updateDebug(message) {
+            if (!this.debugMode || !this.debugContent) return;
+            const timestamp = new Date().toLocaleTimeString();
+            this.debugContent.innerHTML = `<div style="color: #8f9bb3; margin-bottom: 5px;">[${timestamp}]</div>${message}`;
+        }
+        
+        createParticles() {
+            const particles = document.getElementById('particles');
+            if (particles) {
+                for (let i = 0; i < 50; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 10 + 's';
+                    particle.style.animationDuration = 10 + Math.random() * 10 + 's';
+                    particles.appendChild(particle);
+                }
+            }
+        }
+        
+        init() {
+            this.startBtn.addEventListener('click', () => this.startCamera());
+            this.stopBtn.addEventListener('click', () => this.stopCamera());
+            this.screenshotBtn.addEventListener('click', () => this.takeScreenshot());
+            if (this.settingsBtn) {
+                this.settingsBtn.addEventListener('click', () => this.showSettings());
+            }
+            
+            // Add keyboard shortcut for debug (Press D)
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'd' || e.key === 'D') {
+                    this.debugMode = !this.debugMode;
+                    const panel = document.getElementById('debugPanel');
+                    if (panel) {
+                        panel.style.display = this.debugMode ? 'block' : 'none';
+                    }
+                    this.showToast(`Debug mode ${this.debugMode ? 'enabled' : 'disabled'}`, 'info');
+                }
+            });
+            
+            this.updateDebug('🟡 System initialized. Click Start Camera.');
+        }
+        
+        async startCamera() {
+            try {
+                this.updateDebug('🟡 Starting camera...');
+                this.startBtn.disabled = true;
+                this.startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>STARTING</span>';
+                
+                const response = await fetch('/start_camera', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                this.updateDebug(`🟡 Server response status: ${response.status}`);
+                
+                const data = await response.json();
+                this.updateDebug(`🟡 Server response: ${JSON.stringify(data)}`);
+                
+                if (data.success) {
+                    this.isActive = true;
+                    
+                    // Set up video feed
+                    const timestamp = Date.now();
+                    this.videoFeed.src = '/video_feed?' + timestamp;
+                    this.videoFeed.style.display = 'block';
+                    this.placeholder.style.display = 'none';
+                    
+                    this.updateDebug(`✅ Video feed URL: /video_feed?${timestamp}`);
+                    
+                    // Video feed event handlers
+                    this.videoFeed.onload = () => {
+                        this.updateDebug('✅ Video feed loaded successfully');
+                    };
+                    
+                    this.videoFeed.onerror = (e) => {
+                        this.updateDebug('❌ Video feed error: ' + e.type);
+                        if (this.isActive) {
+                            setTimeout(() => {
+                                this.videoFeed.src = '/video_feed?' + Date.now();
+                            }, 1000);
+                        }
+                    };
+                    
+                    // Update UI
+                    this.startBtn.disabled = false;
+                    this.stopBtn.disabled = false;
+                    this.screenshotBtn.disabled = false;
+                    this.cameraStatus.classList.add('active');
+                    this.statusText.textContent = 'SYSTEM ONLINE';
+                    this.startBtn.innerHTML = '<i class="fas fa-play"></i><span>START</span>';
+                    
+                    this.showToast('🚀 Camera initialized successfully');
+                    
+                    // Start gesture polling
+                    this.startGesturePolling();
+                } else {
+                    throw new Error(data.message || 'Failed to start camera');
+                }
+            } catch (error) {
+                console.error('Camera start error:', error);
+                this.updateDebug('❌ Error: ' + error.message);
+                this.startBtn.disabled = false;
+                this.startBtn.innerHTML = '<i class="fas fa-play"></i><span>START</span>';
+                this.showToast('❌ Failed to start camera: ' + error.message, 'error');
+            }
+        }
+        
+        async stopCamera() {
+            try {
+                this.updateDebug('🟡 Stopping camera...');
+                
+                const response = await fetch('/stop_camera', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                this.updateDebug(`🟡 Stop response: ${JSON.stringify(data)}`);
+                
+                if (data.success) {
+                    this.isActive = false;
+                    
+                    this.videoFeed.src = '';
+                    this.videoFeed.style.display = 'none';
+                    this.placeholder.style.display = 'block';
+                    
+                    this.startBtn.disabled = false;
+                    this.stopBtn.disabled = true;
+                    this.screenshotBtn.disabled = true;
+                    this.cameraStatus.classList.remove('active');
+                    this.statusText.textContent = 'SYSTEM OFFLINE';
+                    this.detectedGesture.textContent = '—';
+                    this.detectedAction.textContent = '—';
+                    
+                    if (this.pollInterval) {
+                        clearInterval(this.pollInterval);
+                        this.pollInterval = null;
+                    }
+                    
+                    this.updateDebug('✅ Camera stopped');
+                    this.showToast('🛑 System stopped', 'info');
+                }
+            } catch (error) {
+                console.error('Stop camera error:', error);
+                this.updateDebug('❌ Stop error: ' + error.message);
+                this.showToast('❌ Error stopping camera', 'error');
+            }
+        }
+        
+        startGesturePolling() {
+            if (this.pollInterval) {
+                clearInterval(this.pollInterval);
+            }
+            
+            this.updateDebug('🟡 Starting gesture polling...');
+            
+            this.pollInterval = setInterval(async () => {
+                if (!this.isActive) return;
+                
+                try {
+                    const response = await fetch('/capture_frame', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.updateDebug(`✅ Gesture data received: ${JSON.stringify(data.gesture_results).substring(0, 100)}...`);
+                        this.updateGestureDisplay(data.gesture_results);
+                    } else {
+                        this.updateDebug(`❌ Server returned error: ${data.message || 'Unknown error'}`);
+                    }
+                } catch (error) {
+                    this.updateDebug('❌ Polling error: ' + error.message);
+                    console.error('Polling error:', error);
+                    
+                    // If we get a 404, the route might not exist
+                    if (error.message.includes('404')) {
+                        this.updateDebug('❌ /capture_frame route not found! Check your app.py');
+                        this.detectedGesture.textContent = '⚠️ API Error';
+                        this.detectedAction.textContent = 'Check console';
+                    }
+                }
+            }, 1000); // Poll every second
+        }
+        
+ updateGestureDisplay(results) {
+    if (!this.detectedGesture || !this.detectedAction) return;
+    
+    // Show hand count in debug
+    console.log("Hands detected:", results.hands_detected);
+    console.log("Gestures:", results.gestures);
+    console.log("Stable gesture:", results.stable_gesture);
+    
+    if (results.hands_detected === 0) {
+        this.detectedGesture.textContent = '🖐️ No Hand';
+        this.detectedAction.textContent = 'Show your hand';
+        return;
+    }
+    
+    // Show current detected gesture (even if not stable)
+    if (results.gestures && results.gestures.length > 0) {
+        const current = results.gestures[0];
+        this.detectedGesture.textContent = `${current.emoji} ${current.name}`;
+        
+        // If we have a stable gesture, show action
+        if (results.stable_gesture) {
+            this.detectedAction.textContent = results.stable_gesture.action;
+            
+            // Add animation
+            this.detectedGesture.style.animation = 'pulse 0.5s';
+            this.detectedAction.style.animation = 'pulse 0.5s';
+            setTimeout(() => {
+                this.detectedGesture.style.animation = '';
+                this.detectedAction.style.animation = '';
+            }, 500);
+        } else {
+            this.detectedAction.textContent = 'Stabilizing...';
+        }
+   }
+}
+        takeScreenshot() {
+            if (!this.isActive) {
+                this.showToast('⚠️ Camera not active', 'warning');
+                return;
+            }
+            
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = this.videoFeed.naturalWidth || 640;
+                canvas.height = this.videoFeed.naturalHeight || 480;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(this.videoFeed, 0, 0, canvas.width, canvas.height);
+                
+                const link = document.createElement('a');
+                link.download = `gesture_${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                this.showToast('📸 Screenshot saved!');
+                this.updateDebug('✅ Screenshot saved');
+            } catch (error) {
+                console.error('Screenshot error:', error);
+                this.updateDebug('❌ Screenshot error: ' + error.message);
+                this.showToast('❌ Screenshot failed', 'error');
+            }
+        }
+        
+        showSettings() {
+            this.showToast('⚙️ Settings panel coming soon!', 'info');
+        }
+        
+        showToast(message, type = 'success') {
+            // Remove existing toasts
+            const existingToasts = document.querySelectorAll('.toast');
+            existingToasts.forEach(toast => toast.remove());
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = message;
+            
+            // Style based on type
+            if (type === 'error') {
+                toast.style.borderColor = 'var(--danger)';
+                toast.style.background = 'rgba(255, 77, 77, 0.1)';
+            } else if (type === 'warning') {
+                toast.style.borderColor = 'var(--warning)';
+                toast.style.background = 'rgba(255, 184, 0, 0.1)';
+            } else {
+                toast.style.borderColor = 'var(--success)';
+                toast.style.background = 'rgba(0, 255, 157, 0.1)';
+            }
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    }
+
+    // Initialize app when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+        new GestureAI();
+    });
+</script>
+</body>
+</html>
