@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+test_*.jpg
+test_*.png
+test_capture.jpg
+camera_*_test.jpg
+test_frame*.jpg
+
+# Logs
+*.log
