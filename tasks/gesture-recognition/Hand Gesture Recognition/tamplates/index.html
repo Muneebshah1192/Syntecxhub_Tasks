@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber-Gesture Command Center</title>
+    <style>
+        body {
+            background-color: #050510;
+            color: #0ff;
+            font-family: 'Courier New', Courier, monospace;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-shadow: 0 0 10px #0ff;
+            letter-spacing: 3px;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin-top: 30px;
+        }
+        .video-feed {
+            border: 2px solid #0ff;
+            box-shadow: 0 0 20px #0ff, inset 0 0 20px #0ff;
+            border-radius: 10px;
+            width: 800px;
+            max-width: 90%;
+        }
+        .instructions {
+            margin-top: 20px;
+            border: 1px dashed #f0f;
+            padding: 15px;
+            width: 800px;
+            max-width: 90%;
+            text-align: left;
+            background: rgba(255, 0, 255, 0.05);
+        }
+        .highlight { color: #f0f; text-shadow: 0 0 5px #f0f; }
+    </style>
+</head>
+<body>
+
+    <h1>[ CYBER-GESTURE SYSTEM ONLINE ]</h1>
+    
+    <div class="container">
+        <img class="video-feed" src="{{ url_for('video_feed') }}" alt="Camera Feed Offline">
+        
+        <div class="instructions">
+            <h3>/// GESTURE PROTOCOLS ///</h3>
+            <ul>
+                <li><span class="highlight">OPEN PALM:</span> System Standby.</li>
+                <li><span class="highlight">PINCH (Thumb + Index):</span> Target Engaged / Click Action.</li>
+                <li><span class="highlight">PEACE SIGN:</span> Scanning Mode Initiated.</li>
+            </ul>
+        </div>
+    </div>
+
+</body>
+</html>
